@@ -14,15 +14,11 @@ export default {
   },
   data: function() {
     return {
-      browserHeight: 0,
-      browserWidth: 0,
+      browserHeight: window.innerHeight,
+      browserWidth: window.innerWidth,
       mouseX: 0,
       mouseY: 0,
     }
-  },
-  mounted: function() {
-    this.browserHeight = window.innerHeight;
-    this.browserWidth = window.innerWidth;
   },
   methods: {
     handleMouseMove (e) {
@@ -39,6 +35,7 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
+  background: linear-gradient(90deg, #67B26F, #4ca2cd);
 }
 body {
   margin: 0;
