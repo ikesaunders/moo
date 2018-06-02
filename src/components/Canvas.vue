@@ -7,13 +7,15 @@
 import Tone from 'tone';
 
 class Square {
-  constructor(x, y, context) {
+  constructor(x, y, width, height, context) {
+    this.context = context
+    this.height = height
+    this.width = width
     this.x = x
     this.y = y
-    this.context = context
   }
   delete() {
-    this.context.clearRect(this.x - 40, this.y - 40, 80, 80)
+    this.context.clearRect(this.x, this.y, this.width, this.height)
   }
 }
 
@@ -22,16 +24,51 @@ const CMajScale = ['C3', 'D3', 'E3', 'F3', 'G3', 'A3', 'B3', 'C4']
 export default {
   data () {
     return {
+      columns: [],
       context: null,
+      rows: [],
       squares: [],
       synth: new Tone.MonoSynth().toMaster(),
+      columnWidth: this.width / 16,
+      rowHeight: this.height / 7,
     }
   },
   mounted () {
     this.context = this.$refs.canvas.getContext('2d')
-    this.clear()
+    this.createGrid()
   },
   methods: {
+    createGrid() {
+
+      var columns = [this.columnWidth]
+      var rows = [this.rowHeight]
+      this.context.lineWidth = 5
+      this.context.strokeStyle = '#FFF'
+
+      for (let index = 0; index < 14; index++) {
+        columns.push(columns[index] + this.columnWidth)
+      }
+      for (let index = 0; index < 5; index++) {
+        rows.push(rows[index] + this.rowHeight)
+      }
+      this.columns = columns
+      this.rows = rows
+
+      columns.forEach(x => {
+        this.context.beginPath()
+        this.context.moveTo(x, 0)
+        this.context.lineTo(x, this.height)
+        this.context.stroke()
+      })
+
+      rows.forEach(y => {
+        this.context.beginPath()
+        this.context.moveTo(0, y)
+        this.context.lineTo(this.width, y)
+        this.context.stroke()
+      })
+
+    },
     hasOverlappingCoordinates (square) {
       return (
         square.x - 40 <= this.mouseX && this.mouseX <=square.x + 40 &&
@@ -48,11 +85,13 @@ export default {
       }
     },
     addSquare({ x, y }) {
-      this.squares.push(new Square(x, y, this.context))
+      const nearestX = this.columns[this.columns.findIndex(point => x <= point) - 1]
+      const nearestY = this.rows[this.rows.findIndex(point => y <= point) - 1]
+      this.squares.push(new Square(nearestX, nearestY, this.columnWidth, this.rowHeight, this.context))
       const note = CMajScale[Math.round(((this.height - y) / this.height) * CMajScale.length) - 1]
       this.synth.triggerAttackRelease(note, "8n", undefined, y / this.width);
     },
-    removeOverlappingSquares() {
+    removeOverlappingSquares() { // TODO: change to remove cell
       this.squares = this.squares.reduce((squares, square) => {
         if(this.hasOverlappingCoordinates(square)) {
            square.delete()
@@ -65,7 +104,7 @@ export default {
     draw() {
       this.context.fillStyle = '#FFF37F'
       this.squares.map(square => {
-        this.context.fillRect(square.x - 40, square.y - 40, 80, 80)
+        this.context.fillRect(square.x, square.y, square.width, square.height)
         }
       )
     },
