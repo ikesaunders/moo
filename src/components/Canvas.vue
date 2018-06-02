@@ -71,14 +71,14 @@ export default {
     },
     hasOverlappingCoordinates (square) {
       return (
-        square.x - 40 <= this.mouseX && this.mouseX <=square.x + 40 &&
-        square.y - 40 <= this.mouseY && this.mouseY <=square.y + 40
+        square.x <= this.mouseX && this.mouseX <= square.x + square.width &&
+        square.y <= this.mouseY && this.mouseY <= square.y + square.height
       )
     },
     handleClick () {
-      var overlappingSquares = this.squares.filter(this.hasOverlappingCoordinates)
-      if(overlappingSquares.length) {
-        this.removeOverlappingSquares()
+      var overlappingSquareIndex = this.squares.findIndex(this.hasOverlappingCoordinates)
+      if(overlappingSquareIndex !== -1) {
+        this.removeSquare(overlappingSquareIndex)
       } else {
         this.addSquare({ x: this.mouseX, y: this.mouseY })
         this.draw()
@@ -91,15 +91,17 @@ export default {
       const note = CMajScale[Math.round(((this.height - y) / this.height) * CMajScale.length) - 1]
       this.synth.triggerAttackRelease(note, "8n", undefined, y / this.width);
     },
-    removeOverlappingSquares() { // TODO: change to remove cell
-      this.squares = this.squares.reduce((squares, square) => {
-        if(this.hasOverlappingCoordinates(square)) {
-           square.delete()
-           return squares
-        } else {
-          return squares.concat(square)
-        }
-      }, [])
+    removeSquare(index) {
+      this.squares[index].delete()
+      this.squares.splice(index, 1)
+      // this.squares = this.squares.reduce((squares, square) => {
+      //   if(this.hasOverlappingCoordinates(square)) {
+      //      square.delete()
+      //      return squares
+      //   } else {
+      //     return squares.concat(square)
+      //   }
+      // }, [])
     },
     draw() {
       this.context.fillStyle = '#FFF37F'
