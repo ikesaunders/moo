@@ -17,6 +17,8 @@ class Square {
   }
 }
 
+const CMajScale = ['C3', 'D3', 'E3', 'F3', 'G3', 'A3', 'B3', 'C4']
+
 export default {
   data () {
     return {
@@ -47,7 +49,8 @@ export default {
     },
     addSquare({ x, y }) {
       this.squares.push(new Square(x, y, this.context))
-      this.synth.triggerAttackRelease(x, "8n", undefined, y / this.width);
+      const note = CMajScale[Math.round(((this.height - y) / this.height) * CMajScale.length) - 1]
+      this.synth.triggerAttackRelease(note, "8n", undefined, y / this.width);
     },
     removeOverlappingSquares() {
       this.squares = this.squares.reduce((squares, square) => {
