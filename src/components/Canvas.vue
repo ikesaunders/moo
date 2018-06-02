@@ -7,9 +7,13 @@
 import Tone from 'tone';
 
 class Square {
-  constructor(x, y, index) {
+  constructor(x, y, context) {
     this.x = x
     this.y = y
+    this.context = context
+  }
+  delete() {
+    this.context.clearRect(this.x - 40, this.y - 40, 80, 80)
   }
 }
 
@@ -18,7 +22,7 @@ export default {
     return {
       context: null,
       squares: [],
-      synth: new Tone.Synth().toMaster(),
+      synth: new Tone.MonoSynth().toMaster(),
     }
   },
   mounted () {
@@ -34,22 +38,26 @@ export default {
     },
     handleClick () {
       var overlappingSquares = this.squares.filter(this.hasOverlappingCoordinates)
-      console.log('overlappingSquares', overlappingSquares);
       if(overlappingSquares.length) {
         this.removeOverlappingSquares()
       } else {
         this.addSquare({ x: this.mouseX, y: this.mouseY })
+        this.draw()
       }
-      console.log('this.squares', this.squares);
-      this.clear()
-      this.draw()
     },
     addSquare({ x, y }) {
-      this.squares.push(new Square(x, y))
-      this.synth.triggerAttackRelease(x, "8n");
+      this.squares.push(new Square(x, y, this.context))
+      this.synth.triggerAttackRelease(x, "8n", undefined, y / this.width);
     },
     removeOverlappingSquares() {
-      this.squares = this.squares.filter(square => !this.hasOverlappingCoordinates(square))
+      this.squares = this.squares.reduce((squares, square) => {
+        if(this.hasOverlappingCoordinates(square)) {
+           square.delete()
+           return squares
+        } else {
+          return squares.concat(square)
+        }
+      }, [])
     },
     draw() {
       this.context.fillStyle = '#FFF37F'
